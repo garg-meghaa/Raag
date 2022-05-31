@@ -1,2 +1,2 @@
 # Raag
-A music recommendation application
+This repository contains presentation about Raag- A music Recommender Systems
