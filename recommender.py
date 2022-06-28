@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 import pandas as pd, numpy as np
 import ast
 import pickle
+import itertools
 with open("model.pkl", "rb") as f:
     song_cluster_pipeline = pickle.load(f)
 app = FastAPI()
@@ -107,6 +108,9 @@ def return_df(csv):
 async def recommend_songs(request: Request,song_list: list = Form(...),n_songs: int = Form(...)):
     metadata_cols = ['name', 'year', 'artists']
     #print(song_list,type(song_list))
+    # if len(song_list)>1:
+    #     song_list = [item for songs in song_list for item in songs]
+    # song_list = list(itertools.chain(*song_list))
     song_list = [ast.literal_eval(song) for song in song_list]
     print(song_list,type(song_list))
     song_dict = flatten_dict_list(song_list)
