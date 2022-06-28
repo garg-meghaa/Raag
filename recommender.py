@@ -12,6 +12,9 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import pandas as pd, numpy as np
 import ast
+import pickle
+with open("model.pkl", "rb") as f:
+    song_cluster_pipeline = pickle.load(f)
 app = FastAPI()
 spotify_data = pd.read_csv("data.csv")
 load_dotenv()
