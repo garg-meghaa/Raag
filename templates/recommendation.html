@@ -58,8 +58,10 @@ active
 
 
     <div class="playlist__songlist">
+        {% csrf_token %}
     {% for song in user_playlist %}
     <form action="" method="get">
+        <!-- {% csrf_token %} -->
         <div class="playlist__song playlist__row" onclick='playSong(0,"{{ song.song_youtube_id }}","true")'>
         <div class="playlist__headerTitle">
           <img class="playlist__albumimg" src="{{song.song_albumsrc}}" alt =''/>
@@ -68,8 +70,8 @@ active
           {{song.song_title}}
           </div>
           <div class="playlist__likeDislike ellipsis_one_line">
-            <i onclick="myFunction(1)" class="fa fa-thumbs-up hoveup"></i>
-            <i onclick="myFunction(2)" class="fa fa-thumbs-down hovedown"></i>
+            <i onclick="myFunction('{{ song.song_youtube_id }}',1)" class="fa fa-thumbs-up hoveup"></i>
+            <i onclick="myFunction('{{ song.song_youtube_id }}',2)" class="fa fa-thumbs-down hovedown"></i>
             <!-- <i class="fa fa-thumbs-up"></i> -->
             </div>  
           <textarea name="song" id="song_name_delete" cols="1" rows="1">{{song.song_title}}</textarea>
@@ -88,8 +90,25 @@ active
 
 </div>
 <script>
-    function myFunction(x) {
-console.log("Inside the like and dislike")
+    function myFunction(videoId,x) {
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        if (x==1){
+            console.log('Thumbs up')
+            var liked = true
+        } else{
+            console.log('Thumbs down')
+            var liked = false
+        }
+        $.ajax({
+                type:'PUT',
+                headers: {'X-CSRFToken': csrftoken},
+                url:window.location.pathname,
+                data:JSON.stringify({
+                'videoId':videoId,
+                'liked':liked,
+                'csrfmiddlewaretoken': csrftoken
+                })})
+
 }
 </script>
 

@@ -3,13 +3,13 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
-from .models import playlist_user
+from .models import playlist_user , recommended_song
 from django.urls.base import reverse
 from django.contrib.auth import authenticate,login,logout
 from youtube_search import YoutubeSearch
 import json
 from main.utils import recommend_songs
-
+from django.views.decorators.csrf import csrf_protect
 
 f = open('card.json', 'r')
 CONTAINER = json.load(f)
@@ -50,7 +50,7 @@ def signup(request):
         return redirect('/')
     return render(request,'signup.html',context)
 
-
+@csrf_protect
 def login_auth(request):
     if not request.user.is_anonymous:
         return redirect('/')
@@ -99,7 +99,7 @@ def playlist(request):
     # print(list(playlist_row)[0].song_title)
     return render(request, 'playlist.html', {'song':song,'user_playlist':user_playlist})
 
-
+@csrf_protect
 @login_required(login_url="login/")
 def recommendation(request):
     # if request.user.is_anonymous:
@@ -116,6 +116,12 @@ def recommendation(request):
         add_playlist(request)
         add_recommendation(request)
         return HttpResponse("")
+    if request.method == 'PUT':
+        print('Got the request in django')
+        video_data = json.loads(request.body)
+        v_id = video_data.get('videoId')
+        liked = video_data.get('liked')
+        save_recommendation_response(request,v_id,liked)
     song = 'kSFJGEHDCrQ'
     user_playlist = cur_user.recommended_song_set.all()
     # print(user_playlist)
@@ -154,6 +160,12 @@ def add_playlist(request):
         song_channel=request.POST['channel'], song_date_added=request.POST['date'],song_youtube_id=request.POST['songid'])
 
 
+def save_recommendation_response(request,videoId,liked):
+    curr_song = recommended_song.objects.get(song_youtube_id = videoId)
+    print(curr_song)
+    curr_song.recommendation_liked = liked
+    curr_song.save()
+    print('data saved successfully')
 
 def add_recommendation(request):
     cur_user = playlist_user.objects.get(username = request.user)
