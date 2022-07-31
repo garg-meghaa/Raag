@@ -8,7 +8,7 @@ from django.urls.base import reverse
 from django.contrib.auth import authenticate,login,logout
 from youtube_search import YoutubeSearch
 import json
-
+from main.utils import recommend_songs
 
 
 f = open('card.json', 'r')
@@ -83,8 +83,6 @@ def logout_auth(request):
 
 @login_required(login_url="login/")
 def playlist(request):
-    # if request.user.is_anonymous:
-    #     return redirect('/login')
     cur_user = playlist_user.objects.get(username = request.user)
     try:
       song = request.GET.get('song')
@@ -94,6 +92,7 @@ def playlist(request):
       pass
     if request.method == 'POST':
         add_playlist(request)
+        add_recommendation(request)
         return HttpResponse("")
     song = 'kSFJGEHDCrQ'
     user_playlist = cur_user.playlist_song_set.all()
@@ -107,16 +106,19 @@ def recommendation(request):
     #     return redirect('/login')
     cur_user = playlist_user.objects.get(username = request.user)
     try:
-      song = request.GET.get('song')
-      song = cur_user.playlist_song_set.get(song_title=song)
-      song.delete()
+        song = request.GET.get('song')
+        song = cur_user.recommended_song_set.get(song_title=song)
+        song.delete()
     except:
       pass
     if request.method == 'POST':
+        # print('caught the song -' )
         add_playlist(request)
+        add_recommendation(request)
         return HttpResponse("")
     song = 'kSFJGEHDCrQ'
-    user_playlist = cur_user.playlist_song_set.all()
+    user_playlist = cur_user.recommended_song_set.all()
+    # print(user_playlist)
     # print(list(playlist_row)[0].song_title)
     return render(request, 'recommendation.html', {'song':song,'user_playlist':user_playlist})
 
@@ -125,6 +127,7 @@ def search(request):
   if request.method == 'POST':
 
     add_playlist(request)
+    add_recommendation(request)
     return HttpResponse("")
   try:
     search = request.GET.get('search')
@@ -149,3 +152,24 @@ def add_playlist(request):
         cur_user.playlist_song_set.create(song_title=request.POST['title'],song_dur=request.POST['duration'],
         song_albumsrc = song__albumsrc,
         song_channel=request.POST['channel'], song_date_added=request.POST['date'],song_youtube_id=request.POST['songid'])
+
+
+
+def add_recommendation(request):
+    cur_user = playlist_user.objects.get(username = request.user)
+    new_song = request.POST['title']
+
+    # print(dict(request.POST).keys())
+    # print(new_song)
+
+    if (new_song,) not in cur_user.recommended_song_set.values_list('song_title', ):
+        song_dict = {"name": new_song,"year":2000}
+        # print('recommended songs - ', recommend_songs([song_dict]))
+        rec_songs = recommend_songs([song_dict])
+        for song in rec_songs:
+            songdic = (YoutubeSearch(song.get('name'), max_results=1).to_dict())[0]
+            # print(songdic)
+            song__albumsrc=songdic['thumbnails'][0]
+            cur_user.recommended_song_set.create(song_title=songdic.get('title'),song_dur=songdic.get('duration'),
+            song_albumsrc = song__albumsrc,
+            song_channel=songdic.get('channel'), song_date_added=request.POST['date'],song_youtube_id=songdic.get('id')) #song_dict.get('duration')
