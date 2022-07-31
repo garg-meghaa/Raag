@@ -30,7 +30,8 @@ class recommended_song(models.Model):
     song_dur = models.CharField(max_length=7)
     song_channel = models.CharField(max_length=100)
     song_date_added = models.CharField(max_length=12)
+    recommendation_liked = models.BooleanField(null=True)
 
     def __str__(self):
-      return f'Title = {self.song_title}, Date = {self.song_date_added}'
+      return f'Title = {self.song_title}, Recommended on = {self.song_date_added}, was liked - {self.recommendation_liked}'
 
