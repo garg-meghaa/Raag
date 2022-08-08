@@ -19,6 +19,7 @@ def default(request):
     global CONTAINER
     if request.method == 'POST':
         add_playlist(request)
+        add_recommendation(request)
         return HttpResponse("")
 
     song = 'kSFJGEHDCrQ'
@@ -174,14 +175,14 @@ def add_recommendation(request):
     # print(dict(request.POST).keys())
     # print(new_song)
 
-    if (new_song,) not in cur_user.recommended_song_set.values_list('song_title', ):
-        song_dict = {"name": new_song,"year":2000}
-        # print('recommended songs - ', recommend_songs([song_dict]))
-        rec_songs = recommend_songs([song_dict])
-        for song in rec_songs:
-            songdic = (YoutubeSearch(song.get('name'), max_results=1).to_dict())[0]
-            # print(songdic)
-            song__albumsrc=songdic['thumbnails'][0]
-            cur_user.recommended_song_set.create(song_title=songdic.get('title'),song_dur=songdic.get('duration'),
-            song_albumsrc = song__albumsrc,
-            song_channel=songdic.get('channel'), song_date_added=request.POST['date'],song_youtube_id=songdic.get('id')) #song_dict.get('duration')
+    # if (new_song,) not in cur_user.recommended_song_set.values_list('song_title', ):
+    song_dict = {"name": new_song,"year":2000}
+    # print('recommended songs - ', recommend_songs([song_dict]))
+    rec_songs = recommend_songs([song_dict])
+    for song in rec_songs:
+        songdic = (YoutubeSearch(song.get('name'), max_results=1).to_dict())[0]
+        # print(songdic)
+        song__albumsrc=songdic['thumbnails'][0]
+        cur_user.recommended_song_set.create(song_title=songdic.get('title'),song_dur=songdic.get('duration'),
+        song_albumsrc = song__albumsrc,
+        song_channel=songdic.get('channel'), song_date_added=request.POST['date'],song_youtube_id=songdic.get('id')) #song_dict.get('duration')
