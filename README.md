@@ -1,6 +1,6 @@
 # Raag
 This repository contains presentation about Raag- A music Recommender Systems
-We have trained model using k menas clustring and used saved pickle model. Applied FASTAPI wrapper and tested responses in FASTAPI swagger UI.
+We have trained model using k menas clustring and used saved pickle model.
 
 ![image](https://user-images.githubusercontent.com/106286886/176231004-32c8ed5c-e1ec-461b-adfb-c5095c9fafab.png)
 
